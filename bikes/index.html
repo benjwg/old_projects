@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Where am I going?</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+<script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+<script src="http://www.mapquestapi.com/sdk/leaflet/v1.s/mq-map.js?key=Fmjtd%7Cluurn1u1n9%2C70%3Do5-9wy0gz "></script>
+<script src="data.js"></script>
+<style type="text/css">
+html, body {
+    font-family: "open sans",sans-serif;
+    background-color: #ddd;
+    padding: 0px;
+    margin: 0px;
+}
+
+h1 {
+    padding: 0px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 14pt;
+}
+
+#innercontainer {
+    position: absolute;
+    margin: auto;
+    background-color: #fff;
+    padding:10px;
+    width: 75vh;
+    top: 20px;
+    left: 0;
+    right: 0;
+    border-radius: 5px;
+}
+
+#map {
+    width: 75vh;
+    height: 75vh;
+    }
+
+#title {
+    width: 75vh;
+    font-size: 10pt;
+
+}
+
+</style>
+</head>
+<body>
+<div id="innercontainer">
+<div id="title"><h1>Where am I going?</h1><p>I was curious where I was going and coming from most often over the past few months while using the Capital Bikeshare in DC. So I mapped it. The darker the line, the more frequently I took that route, the thicker it is the slower I went.</p></div>
+<div id="map"></div>
+</div>
+<script type="text/javascript">
+
+var CartoDB_Positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+	attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+	subdomains: 'abcd',
+	minZoom: 0,
+	maxZoom: 18
+});
+
+var map = L.map('map', {  zoomControl: false })
+    .setView([38.907532, -77.036888], 13)
+    .addLayer(CartoDB_Positron);
+
+new L.Control.Zoom({ position: 'bottomleft' }).addTo(map);
+
+for (var i = 0; i < allData.length; i++) {
+			lines = new L.Polyline(allData[i][0], {color: "maroon", weight: allData[i][2], opacity: 0.2})
+				.addTo(map)
+                .bindPopup("Took " + allData[i][1] + " minutes");
+		}
+
+map.fitBounds(allData[i][0].getBounds(), {
+    padding: [10, 10]
+});
+</script>
+</body>
+<script>'undefined'=== typeof _trfq || (window._trfq = []);'undefined'=== typeof _trfd && (window._trfd=[]),_trfd.push({'tccl.baseHost':'secureserver.net'}),_trfd.push({'ap':'cpsh'},{'server':'p3plcpnl0877'}) // Monitoring performance to make your website faster. If you want to opt-out, please contact web hosting support.</script><script src='https://img1.wsimg.com/tcc/tcc_l.combined.1.0.6.min.js'></script></html>
