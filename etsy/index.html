@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>The color of money (on Etsy), etc</title>
+<meta charset="utf-8" />
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+<script src="Chart.min.js"></script>
+<script>
+function createGraphs(){
+    var data_hi = [
+        {"label":"black","color":"black","highlight":"black","value":2082},
+        {"label":"white","color":"white","highlight":"white","value":11053},
+        {"label":"grey","color":"grey","highlight":"grey","value":176},
+        {"label":"red","color":"red","highlight":"red","value":709},
+        {"label":"blue","color":"blue","highlight":"blue","value":2336},
+        {"label":"green","color":"green","highlight":"green","value":893},
+        {"label":"yellow","color":"yellow","highlight":"yellow","value":5450},
+        {"label":"purple","color":"purple","highlight":"purple","value":247},
+        {"label":"orange","color":"orange","highlight":"orange","value":195},
+        {"label":"pink","color":"pink","highlight":"pink","value":1557},
+        {"label":"brown","color":"brown","highlight":"brown","value":474},
+        {"label":"gold","color":"gold","highlight":"gold","value":19826},
+        {"label":"silver","color":"silver","highlight":"silver","value":853}]
+    
+    var data_lo = [
+        {"label":"black","color":"black","highlight":"black","value":1525},
+        {"label":"white","color":"white","highlight":"white","value":2123},
+        {"label":"grey","color":"grey","highlight":"grey","value":538},
+        {"label":"red","color":"red","highlight":"red","value":1602},
+        {"label":"blue","color":"blue","highlight":"blue","value":1966},
+        {"label":"green","color":"green","highlight":"green","value":1767},
+        {"label":"yellow","color":"yellow","highlight":"yellow","value":956},
+        {"label":"purple","color":"purple","highlight":"purple","value":875},
+        {"label":"orange","color":"orange","highlight":"orange","value":663},
+        {"label":"pink","color":"pink","highlight":"pink","value":2255},
+        {"label":"brown","color":"brown","highlight":"brown","value":714},
+        {"label":"gold","color":"gold","highlight":"gold","value":1215},
+        {"label":"silver","color":"silver","highlight":"silver","value":5090}]
+
+    var and_data_hi = [
+        {"label":"and","color":"#2BAF2B","highlight":"#2BAF2B","value":8927},
+        {"label":"or","color":"#00ACEE","highlight":"#00ACEE","value":1003}]
+    
+    var and_data_lo = [
+        {"label":"and","color":"#2BAF2B","highlight":"#2BAF2B","value":3804},
+        {"label":"or","color":"#00ACEE","highlight":"#00ACEE","value":2456}]
+
+    var data_options = {
+        animateScale: true,
+        segmentStrokeColor : "#eee",
+        responsive: true
+    }
+    
+    
+    var color_hi = document.getElementById('color_hi').getContext('2d');
+    new Chart(color_hi).Pie(data_hi, data_options);
+    
+    var color_lo = document.getElementById('color_lo').getContext('2d');
+    new Chart(color_lo).Pie(data_lo, data_options);
+    
+    var and_lo = document.getElementById('and_lo').getContext('2d');
+    new Chart(and_lo).Doughnut(and_data_lo, data_options);
+    
+    var and_hi = document.getElementById('and_hi').getContext('2d');
+    new Chart(and_hi).Doughnut(and_data_hi, data_options);
+
+};
+</script>
+<style type="text/css">
+html, body {
+    font-family: "open sans",sans-serif;
+    background-color: #ddd;
+    padding: 0px;
+    margin: 0px;
+    background-color: maroon;
+    font-size: 10pt;
+}
+    
+h1 {
+    padding: 0px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 14pt;
+    clear: both;
+}
+    
+h2 {
+    clear: both;
+}
+
+#innercontainer {
+    position: absolute;
+    margin: auto;
+    background-color: #eee;
+    padding:10px;
+    width: 50%;
+    top: 20px;
+    left: 0;
+    right: 0;
+    border-radius: 5px;
+    margin-bottom: 100px;
+}
+    
+#title {
+    width: 100%;    
+}
+    
+.graphcontainer {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.column {
+    width: 50%;
+    margin: 0 0;
+    float: left;
+    text-align: center;
+}   
+
+</style>
+</head>
+<body onload="createGraphs();">
+<div id="innercontainer">
+<div id="title"><h1>The color of money (on Etsy)</h1><p>Etsy's product posting are so interesting because the seller is often the producer, or at least very close to the producer. The postings are personal. But, what if we bifurcated the current product listing and looked at the ~50,000 most expensive and ~50,000 least expensive items on Etsy. How would they differ?</p><p>First we can see that color is more often mentioned in more expensive items' titles, and a huge part of that comes from white, yellow, and gold. Ie. Jewelry. Makes sense. And silver is much more common in the inexpensive items, as one might also expect. Though the details about other differences in color occurrence invite other explanatory stories:</p></div>
+<div class="graphcontainer">
+<div class="column"><h3>Expensive</h3><p>Total color mentions: 45,851</p><canvas id="color_hi" width="340" height="300"></canvas></div>
+<div class="column"><h3>Inexpensive</h3><p>Total color mentions: 21,289</p><canvas id="color_lo" class="chart" width="340" height="300"></canvas></div>
+</div>
+<h1>And/Or?</h1><p>Usually, when performing wordcounts, we throw away little words like "and" and "or", thinking them meaningless. But here, there's an obvious connection between these words and items' cost - particularly a strong association between 'and' and higher cost items. It does appear that here "more is (worth) more", or at least the appearance of more can be worth more. (thanks for the idea <a href="https://twitter.com/jkreim">@JKreim</a>).</p>
+<div class="graphcontainer">
+<div class="column"><h3>Expensive</h3><p>Total and/or mentions: 9,930</p><canvas id="and_hi" width="340" height="300"></canvas></div>
+<div class="column"><h3>Inexpensive</h3><p>Total and/or mentions: 6,260</p><canvas id="and_lo" class="chart" width="340" height="300"></canvas></div>
+</div>
+<h1>Ok, what was this?</h1><p>Mostly just a quick experiment with the python package beautiful soup and Charts.js, but also just scratching the surface of what kind of customer and seller behavior and preferances might be observable in even the publicly available side of a site like Etsy.</p>
+<h2>Questions/Thoughts?</h2><p>Get <a href="mailto:benj.wg@gmail.com">in touch</a><br>See more at <a href="http://www.benwg.com">benwg.com</a></p>
+</div>
+</div>
+</body>
+</html>
