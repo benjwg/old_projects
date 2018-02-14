@@ -21,7 +21,7 @@ html, body {
     width: 500px;
     height: 500px;
 }
-    
+
 h1 {
     padding: 0px;
     margin-top: 2px;
@@ -44,7 +44,7 @@ h1 {
 .title {
     width: 500px;
     font-size: 10pt;
-    
+
 }
 </style>
   </head>
@@ -152,10 +152,10 @@ h1 {
             data.push({
               properties: {
                 score: +d.score,
-              }, 
-              type: "Feature", 
+              },
+              type: "Feature",
               geometry: {
-                coordinates:[+d.longitude,+d.latitude], 
+                coordinates:[+d.longitude,+d.latitude],
                 type:"Point"
               }
             });
@@ -169,12 +169,12 @@ h1 {
         var opacity = d3.scale.linear()
             .domain([4.9,9.5])
             .range([0,1]);
-            
+
         var color_hex = d3.scale.linear()
             .domain([0,10])
             .range(["white","blue"])
             .interpolate(d3.interpolateLab);
-            
+
         var averageFunction = function(d) {
             var sum = 0;
             for(var i = 0; i < d.length; i++)
@@ -188,19 +188,19 @@ h1 {
 	       subdomains: 'abcd',
 	       minZoom: 0,
 	       maxZoom: 18
-        });   
-          
+        });
+
         var leafletMap = L.map('mapContainer')
-            .setView([38.893379, -77.036329], 12)  
+            .setView([38.893379, -77.036329], 12)
             .addLayer(CartoDB_Positron);
-          
+
         //********  ADD HEXBIN LAYER TO MAP AND DEFINE HEXBIN STYLE FUNCTION
-          
-        var hexLayer = L.hexbinLayer(geoData, { 
+
+        var hexLayer = L.hexbinLayer(geoData, {
                           style: hexbinStyle
                         }).addTo(leafletMap);
 
-          
+
         function hexbinStyle(hexagons) {
           hexagons
             .attr("stroke", "black")
@@ -226,10 +226,10 @@ h1 {
 //              return cscale(avg);
 //            });
         }
-          
+
 
 
       });
     </script>
   </body>
-<script>'undefined'=== typeof _trfq || (window._trfq = []);'undefined'=== typeof _trfd && (window._trfd=[]),_trfd.push({'tccl.baseHost':'secureserver.net'}),_trfd.push({'ap':'cpsh'},{'server':'p3plcpnl0877'}) // Monitoring performance to make your website faster. If you want to opt-out, please contact web hosting support.</script><script src='https://img1.wsimg.com/tcc/tcc_l.combined.1.0.6.min.js'></script></html>
+</html>
