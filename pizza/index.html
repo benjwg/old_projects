@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+<title>Where to go for pizza in DC?</title>
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600' rel='stylesheet' type='text/css'>
+<script src='https://api.tiles.mapbox.com/mapbox.js/v1.6.2/mapbox.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox.js/v1.6.2/mapbox.css' rel='stylesheet' />
+<style>
+html, body {
+    font-family: "open sans",sans-serif;
+    background-color: #ddd;
+    padding: 0px;
+    margin: 0px;
+}
+
+#mapContainer {
+    margin: 0px;
+    background-color: #fff;
+    width: 500px;
+    height: 500px;
+}
+    
+h1 {
+    padding: 0px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    font-size: 14pt;
+}
+
+#innercontainer {
+    position: absolute;
+    margin: auto;
+    background-color: #fff;
+    padding: 10px;
+    width: 500px;
+    top: 20px;
+    border-radius: 5px;
+    left: 0px;
+    right: 0px;
+    margin-bottom: 100px;
+}
+.title {
+    width: 500px;
+    font-size: 10pt;
+    
+}
+</style>
+  </head>
+  <body>
+    <div id="innercontainer">
+        <div class="title"><h1>Where to go for (a lot of/good) pizza in DC?</h1><p>Mapping apps usually give us a lot of choice, too much choice. The maps they serve us usually display the sheer number of options, and we have to delve into each one to figure out what's good or bad. Further, after making our choice we'll often bee-line to one place, not checking out the neighborhood around it for other potential options.</p><p>As an experiment, I scraped the data for all pizza places in DC from Foursquare and used a hexbinning method to indicate what parts of the city have a lot of pizza options, and where they're on average better-rated. The bigger the hexagon, the more pizza places, and the darker the hexagon, the better-rated the pizza available is. You could use a map like this to add a little chance back into your quest for pizza, heading to a part of the city that looks promising and searching around, rather than going straight to an exact location to get your pizza fix.</p></div>
+    <div id="mapContainer"></div>
+        <div class="title"><p>This analysis borrowed heavilly from the work of <a href="https://gist.github.com/mbostock/">mbostock</a>.</p><h2>More?</h2><p>Get <a href="mailto:benj.wg@gmail.com">in touch</a><br>See more at <a href="http://www.benwg.com">benwg.com</a></p></div>
+    </div>
+    <script src="d3.min.js"></script>
+    <script src="hexbin.js"></script>
+    <script src="simple_statistics.js"></script>
+    <script>
+
+      //********  LEAFLET HEXBIN LAYER CLASS *********************************************
+
+      L.HexbinLayer = L.Class.extend({
+        includes: L.Mixin.Events,
+        initialize: function (rawData, options) {
+          this.levels = {};
+          this.layout = d3.hexbin().radius(10);
+          this.rscale = d3.scale.sqrt().range([0, 10]).clamp(true);
+          this.rwData = rawData;
+          this.config = options;
+        },
+        project: function(x) {
+          var point = this.map.latLngToLayerPoint([x[1], x[0]]);
+          return [point.x, point.y];
+        },
+        getBounds: function(d) {
+          var b = d3.geo.bounds(d)
+          return L.bounds(this.project([b[0][0], b[1][1]]), this.project([b[1][0], b[0][1]]));
+        },
+        update: function () {
+          var pad = 100, xy = this.getBounds(this.rwData), zoom = this.map.getZoom();
+
+          this.container
+            .attr("width", xy.getSize().x + (2 * pad))
+            .attr("height", xy.getSize().y + (2 * pad))
+            .style("margin-left", (xy.min.x - pad) + "px")
+            .style("margin-top", (xy.min.y - pad) + "px");
+
+          if (!(zoom in this.levels)) {
+              this.levels[zoom] = this.container.append("g").attr("class", "zoom-" + zoom);
+              this.genHexagons(this.levels[zoom]);
+              this.levels[zoom].attr("transform", "translate(" + -(xy.min.x - pad) + "," + -(xy.min.y - pad) + ")");
+          }
+          if (this.curLevel) {
+            this.curLevel.style("display", "none");
+          }
+          this.curLevel = this.levels[zoom];
+          this.curLevel.style("display", "inline");
+        },
+        genHexagons: function (container) {
+          var data = this.rwData.features.map(function (d) {
+            var coords = this.project(d.geometry.coordinates)
+            return [coords[0],coords[1], d.properties];
+          }, this);
+
+          var bins = this.layout(data);
+          var hexagons = container.selectAll(".hexagon").data(bins);
+
+          var counts = [];
+          bins.map(function (elem) { counts.push(elem.length) });
+          this.rscale.domain([0, (ss.mean(counts) + (ss.standard_deviation(counts) * 3))]);
+
+          var path = hexagons.enter().append("path").attr("class", "hexagon");
+          this.config.style.call(this, path);
+
+          that = this;
+          hexagons
+            .attr("d", function(d) { return that.layout.hexagon(that.rscale(d.length)); })
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+        },
+        addTo: function (map) {
+          map.addLayer(this);
+          return this;
+        },
+        onAdd: function (map) {
+          this.map = map;
+          var overlayPane = this.map.getPanes().overlayPane;
+
+          if (!this.container || overlayPane.empty) {
+              this.container = d3.select(overlayPane)
+                  .append('svg')
+                      .attr("id", "hex-svg")
+                      .attr('class', 'leaflet-layer leaflet-zoom-hide');
+          }
+          map.on({ 'moveend': this.update }, this);
+          this.update();
+        }
+      });
+
+      L.hexbinLayer = function (data, styleFunction) {
+        return new L.HexbinLayer(data, styleFunction);
+      };
+      //**********************************************************************************
+      //********  IMPORT DATA AND REFORMAT ***********************************************
+      //**********************************************************************************
+      d3.csv('pizza.csv', function (error, pizza) {
+
+        function reformat (array) {
+          var data = [];
+          array.map(function (d){
+            data.push({
+              properties: {
+                score: +d.score,
+              }, 
+              type: "Feature", 
+              geometry: {
+                coordinates:[+d.longitude,+d.latitude], 
+                type:"Point"
+              }
+            });
+          });
+          return data;
+        }
+        var geoData = { type: "FeatureCollection", features: reformat(pizza) };
+        //**********************************************************************************
+        //********  CREATE LEAFLET MAP *****************************************************
+        //**********************************************************************************
+        var opacity = d3.scale.linear()
+            .domain([4.9,9.5])
+            .range([0,1]);
+            
+        var color_hex = d3.scale.linear()
+            .domain([0,10])
+            .range(["white","blue"])
+            .interpolate(d3.interpolateLab);
+            
+        var averageFunction = function(d) {
+            var sum = 0;
+            for(var i = 0; i < d.length; i++)
+            {
+                sum += d[i].score;
+            }
+        };
+
+        var CartoDB_Positron = L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+	       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+	       subdomains: 'abcd',
+	       minZoom: 0,
+	       maxZoom: 18
+        });   
+          
+        var leafletMap = L.map('mapContainer')
+            .setView([38.893379, -77.036329], 12)  
+            .addLayer(CartoDB_Positron);
+          
+        //********  ADD HEXBIN LAYER TO MAP AND DEFINE HEXBIN STYLE FUNCTION
+          
+        var hexLayer = L.hexbinLayer(geoData, { 
+                          style: hexbinStyle
+                        }).addTo(leafletMap);
+
+          
+        function hexbinStyle(hexagons) {
+          hexagons
+            .attr("stroke", "black")
+//            .attr("fill", function(d) { return color_hex(d.score); })
+//            .attr("fill", function(d) { return color_hex(d3.median(d, function(d) { return d.score; })); })
+//            .attr("fill-opacity", function(d) { return opacity2(d3.median(d, function(d) { return +d.score; })); })
+            .attr("fill", "red")
+            .attr("fill-opacity", function(d) {
+                var values= d.map(function (elem) {
+                    return elem[2].score;
+                })
+                var avg = d3.mean(d, function(d) { return +d[2].score; })
+                return opacity(avg);
+            });
+//              return opacity2(d3.median(d, function(d) { return +d.score; })); })
+
+//            .attr("fill-opacity", function(d) { return opacity(averageFunction(d)); });
+//            .attr("fill", function (d) {
+//              var values = d.map(function (elem) {
+//                return elem[2].group;
+//              })
+//              var avg = d3.mean(d, function(d) { return +d[2].group; })
+//              return cscale(avg);
+//            });
+        }
+          
+
+
+      });
+    </script>
+  </body>
+<script>'undefined'=== typeof _trfq || (window._trfq = []);'undefined'=== typeof _trfd && (window._trfd=[]),_trfd.push({'tccl.baseHost':'secureserver.net'}),_trfd.push({'ap':'cpsh'},{'server':'p3plcpnl0877'}) // Monitoring performance to make your website faster. If you want to opt-out, please contact web hosting support.</script><script src='https://img1.wsimg.com/tcc/tcc_l.combined.1.0.6.min.js'></script></html>
